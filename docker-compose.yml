@@ -1,0 +1,11 @@
+services:
+  infra:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/infra
+      - ../auth:/root/.aws
+    entrypoint: sleep 1000000
+
+    working_dir: /infra
