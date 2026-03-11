@@ -1,0 +1,34 @@
+FROM quay.io/keycloak/keycloak:latest
+
+# Add custom themes (email/login) to the Keycloak image.
+# This keeps the runtime ECS task definition simple (no extra mounts/volumes needed).
+USER root
+COPY ./keycloak-themes/ /opt/keycloak/themes/
+COPY ./ci/keycloak-entrypoint.sh /opt/keycloak/bin/ar-entrypoint.sh
+
+# Ensure the Keycloak user can read theme files.
+RUN tr -d '\r' < /opt/keycloak/bin/ar-entrypoint.sh > /opt/keycloak/bin/ar-entrypoint.sh.lf \
+  && mv /opt/keycloak/bin/ar-entrypoint.sh.lf /opt/keycloak/bin/ar-entrypoint.sh \
+  && chmod +x /opt/keycloak/bin/ar-entrypoint.sh \
+  && chown -R 1000:0 /opt/keycloak/themes /opt/keycloak/bin/ar-entrypoint.sh \
+  && chmod -R g+rwX /opt/keycloak/themes
+USER 1000
+
+# When using `kc.sh build` / `--optimized`, some options become build-time.
+# We bake them into the image so runtime `start` stays fast and stable.
+ENV KC_DB=postgres \
+    KC_HEALTH_ENABLED=true \
+    KC_METRICS_ENABLED=true \
+    KC_HTTP_ENABLED=true \
+    KC_PROXY_HEADERS=xforwarded \
+    KC_HOSTNAME_STRICT=false \
+    KC_HOSTNAME_STRICT_HTTPS=false \
+    KC_HTTP_MANAGEMENT_HEALTH_ENABLED=false
+
+# Build an optimized Keycloak image so runtime `start` doesn't do Quarkus augmentation.
+RUN /opt/keycloak/bin/kc.sh build
+
+# Use wrapper entrypoint to enforce `--optimized` at runtime.
+# Invoke via `/bin/sh` so we don't depend on shebang line endings.
+ENTRYPOINT ["/bin/sh", "/opt/keycloak/bin/ar-entrypoint.sh"]
+

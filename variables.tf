@@ -46,12 +46,53 @@ variable "app_name" {
   default = "agentruntime"
 }
 
-# variable "db_password" {
-#   type    = string
-#   default = "postgres"
-# }
-
 variable "image" {
   type = string
   default = "nginx"
 }
+
+variable "project" {
+  description = "Project name used as SSM path prefix"
+  type        = string
+}
+
+variable "environment" {
+  description = "Deployment environment (e.g. prod)"
+  type        = string
+}
+
+variable "kc_admin_user" {
+  description = "Keycloak bootstrap admin username (KEYCLOAK_ADMIN)"
+  type        = string
+  sensitive   = true
+}
+
+variable "kc_admin_password" {
+  description = "Keycloak bootstrap admin password (KEYCLOAK_ADMIN_PASSWORD)"
+  type        = string
+  sensitive   = true
+}
+
+variable "kc_db_user" {
+  description = "Postgres master username for the Keycloak database"
+  type        = string
+  sensitive   = true
+}
+
+variable "kc_db_password" {
+  description = "Postgres master password for the Keycloak database"
+  type        = string
+  sensitive   = true
+}
+variable "kc_mail_username" {
+  description = "SMTP username for Keycloak outbound email"
+  type        = string
+  sensitive   = true
+}
+
+variable "kc_mail_password" {
+  description = "SMTP password or API key for Keycloak outbound email"
+  type        = string
+  sensitive   = true
+}
+

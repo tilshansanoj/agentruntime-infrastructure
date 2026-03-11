@@ -10,4 +10,9 @@ locals {
     agentruntime-prd : 158711196993  
     agentruntime-root : 639935287789
   }
+  common_tags = {
+    Project     = var.project
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
 }
